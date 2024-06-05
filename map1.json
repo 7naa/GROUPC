@@ -19,9 +19,8 @@
         "message": "You hear nothing. Your options are to move north or east. "
       },
       "room4": {
-        "north": "room8",
         "west": "room3",
-        "message": "You hear nothing. Your options are to move north or west."
+        "message": "You feel a gentle breeze~ Your options are to move west."
       },
       "room5": {
         "north": "room9",
@@ -37,35 +36,39 @@
         "north": "room11",
         "south": "room3",
         "west": "room6",
-        "message": "You hear nothing. Your options are to move north, south, or west."
+        "message": "You feel a gentle breeze~ Your options are to move north, south, or west."
       },
       "room8": {
-        "south": "room4",
         "message": "YOU WIN !"
       },
       "room9": {
+        "north": "room13",
         "east": "room10",
         "south": "room5",
-        "message": "You hear nothing. Your options are to move east or south."
+        "message": "You hear nothing. Your options are to move north, east or south."
       },
       "room10": {
         "north": "room14",
         "west": "room9",
-        "message": "You hear a roar off in the distance. Your options are to move north or west."
+        "east": "room11",
+        "message": "You hear nothing. Your options are to move north, west or east."
       },
       "room11": {
         "east": "room12",
         "south": "room7",
-        "message": "You hear nothing. Your options are to move east or south."
+        "west": "room10",
+        "message": "You hear a loud roar! Your options are to move east, south or west."
       },
       "room12": {
         "north": "room16",
+        "south": "room8",
         "west": "room11",
-        "message": "You hear a roar off in the distance. Your options are to move north or west."
+        "message": "You feel a gentle breeze~ Your options are to move north, south or west."
       },
       "room13": {
         "east": "room14",
-        "message": "You hear a roar off in the distance. Your options are to move east."
+        "south": "room9",
+        "message": "You hear nothing. Your options are to move east or south."
       },
       "room14": {
         "south": "room10",
@@ -78,7 +81,7 @@
       },
       "room16": {
         "west": "room15",
-        "south": "room2",
+        "south": "room12",
         "message": "You hear a loud roar! Your options are to move west or south."
       }
     }
