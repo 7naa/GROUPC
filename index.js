@@ -9,7 +9,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // Middleware to parse JSON in request body
 app.use(express.json());
 
-const uri = "mongodb+srv://7naa:hurufasepuluhkali@cluster0.4oeznz2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const uri = "mongodb+srv://7naa:perempuancantik@infosecurity.zvukc.mongodb.net/?retryWrites=true&w=majority&appName=InfoSecurity";
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -28,7 +28,7 @@ function verifyToken(req, res, next) {
 
   if (token == null) return res.sendStatus(401);
 
-  jwt.verify(token, "hurufasepuluhkali", (err, decoded) => {
+  jwt.verify(token, "manabolehbagi", (err, decoded) => {
     console.log(err);
 
     if (err) return res.sendStatus(403);
@@ -63,7 +63,7 @@ app.post('/login', async (req, res) => {
       if (bcrypt.compareSync(req.body.password, result.password) == true) {
         var token = jwt.sign(
           { _id: result._id, username: result.username, name: result.name },
-          'hurufasepuluhkali'
+          'manabolehbagi'
         );
         res.send(token);
       } else {
@@ -100,7 +100,7 @@ app.delete('/user/:id', verifyToken, async (req, res) => {
 
 app.post('/buy', async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
-  var decoded = jwt.verify(token, 'mysupersecretpasskey');
+  var decoded = jwt.verify(token, 'deletepulak');
   console.log(decoded);
 });
 
