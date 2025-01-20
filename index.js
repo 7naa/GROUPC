@@ -131,7 +131,7 @@ app.post('/admin/login',async (req, res) => {
     const token = jwt.sign(
       { _id: admin._id, username: admin.username, role: "admin" },
       'hurufasepuluhkali',
-      {expiresIn : '1m'}//Token expires in 1 hour 
+      {expiresIn : '15m'}//Token expires in 15 minutes 
     );
 
     res.send({ _id: admin._id, token, role: "admin" });
@@ -235,7 +235,7 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign(
       { _id: user._id, username: user.username, name: user.name, role: "user" },
       'hurufasepuluhkali',
-      {expiresIn : '1m'}//Token expires in 1 hour 
+      {expiresIn : '15'}//Token expires in 15 minutes
     );
 
     res.send({ _id: user._id, token, role: "user" });
