@@ -211,6 +211,16 @@ app.post('/user', async (req, res) => {
   }
 });
 
+const rateLimit = require('express-rate-limit');
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Maximum 5 attempts
+  handler: (req, res) => {
+    res.status(429).send("Too many login attempts. Please try again later.");
+  },
+});
+
 // User login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
