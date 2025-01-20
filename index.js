@@ -182,6 +182,17 @@ app.post('/user', async (req, res) => {
     return res.status(400).send("Password must be at least 8 characters long.");
   }
 
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!regex.test(password)) {
+    return { 
+      valid: false, 
+      message: "Password must include uppercase, lowercase, number, and special character." 
+    };
+  }
+
+  return { valid: true };
+}
+
   try {
     const existingUser = await client.db("user").collection("userdetail").findOne({ username });
     if (existingUser) {
@@ -225,7 +236,8 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { _id: user._id, username: user.username, name: user.name, role: "user" },
-      'hurufasepuluhkali'
+      'hurufasepuluhkali',
+      {expiresIn : ''}//Token expires in 1 hour 
     );
 
     res.send({ _id: user._id, token, role: "user" });
