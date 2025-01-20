@@ -184,13 +184,11 @@ app.post('/user', async (req, res) => {
 
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   if (!regex.test(password)) {
-    return { 
-      valid: false, 
-      message: "Password must include uppercase, lowercase, number, and special character." 
-    };
+    return res.status(400).send("Password must include uppercase, lowercase, number, and special character.");
   }
 
-  return { valid: true };
+  // Proceed with further processing if password is valid
+  res.send({ valid: true });
 
   try {
     const existingUser = await client.db("user").collection("userdetail").findOne({ username });
