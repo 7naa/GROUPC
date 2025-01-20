@@ -125,7 +125,7 @@ app.post('/admin/login', async (req, res) => {
 
     const isPasswordValid = bcrypt.compareSync(password, admin.password);
     if (!isPasswordValid) {
-      return res.status(401).send("Wrong password! Try again");
+      return res.status(401).send("Too many attempts, try again later");
     }
 
     const token = jwt.sign(
