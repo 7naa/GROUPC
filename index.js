@@ -4,6 +4,7 @@ const app = express();
 const port = process.env.PORT || 4000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // Middleware to parse JSON in request body
@@ -108,12 +109,13 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-const rateLimit = require('express-rate-limit');
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 attempts
-  message: "Too many login attempts. Please try again in 15 minutes."
+  handler: (req,res) => {
+    res.status(429).send("Too many login attempts. Please try again later.");
+  },
 });
 
 // Admin login
