@@ -112,8 +112,8 @@ const rateLimit = require('express-rate-limit');
 
 // Rate limiting middleware
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login requests per `window` (15 minutes)
+  windowMs: 1 * 60 * 1000, // 15 minutes
+  max: 2, // Limit each IP to 5 login requests per `window` (15 minutes)
   message: {
     status: 429,
     message: "Too many login attempts from this IP. Please try again after 15 minutes."
@@ -121,6 +121,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
+app.use(loginLimiter); // Apply the rate limiter here
 
 // Admin login
 app.post('/admin/login',loginLimiter,async (req, res) => {
@@ -330,7 +331,6 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
-app.use(loginLimiter); // Apply the rate limiter here
 // MongoDB connection setup
 async function run() {
   try {
