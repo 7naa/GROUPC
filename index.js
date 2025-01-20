@@ -1,10 +1,13 @@
-
+require('dotenv').config();  // Load environment variables
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 4000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
+// Use environment variable for JWT secret
+const jwtSecret = process.env.JWT_SECRET;
 
 // Middleware to parse JSON in request body
 app.use(express.json());
@@ -25,7 +28,7 @@ function verifyToken(req, res, next) {
 
   if (token == null) return res.sendStatus(401);
 
-  jwt.verify(token, "hurufasepuluhkali", (err, decoded) => {
+  jwt.verify(token, jwtSecret, (err, decoded) => {
     if (err) return res.sendStatus(403);
 
     req.identity = decoded; // Attach decoded user data to the request
