@@ -109,15 +109,6 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
-  handler: (req,res) => {
-    res.status(429).send("Too many login attempts. Please try again later.");
-  },
-});
-
 // Admin login
 app.post('/admin/login',async (req, res) => {
   const { username, password } = req.body;
@@ -141,7 +132,7 @@ app.post('/admin/login',async (req, res) => {
     const token = jwt.sign(
       { _id: admin._id, username: admin.username, role: "admin" },
       'hurufasepuluhkali',
-      {expiresIn : '1h'}//Token expires in 1 hour 
+      {expiresIn : '1m'}//Token expires in 1 hour 
     );
 
     res.send({ _id: admin._id, token, role: "admin" });
@@ -244,7 +235,7 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign(
       { _id: user._id, username: user.username, name: user.name, role: "user" },
       'hurufasepuluhkali',
-      {expiresIn : ''}//Token expires in 1 hour 
+      {expiresIn : '1m'}//Token expires in 1 hour 
     );
 
     res.send({ _id: user._id, token, role: "user" });
