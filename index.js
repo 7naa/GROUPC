@@ -108,8 +108,16 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
+const rateLimit = require('express-rate-limit');
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts
+  message: "Too many login attempts. Please try again in 15 minutes."
+});
+
 // Admin login
-app.post('/admin/login', async (req, res) => {
+app.post('/admin/login', loginLimiter,async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
