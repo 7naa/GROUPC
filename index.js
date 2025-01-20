@@ -108,23 +108,8 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-const rateLimit = require('express-rate-limit');
-
-// Rate limiting middleware
-const loginLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 15 minutes
-  max: 2, // Limit each IP to 5 login requests per `window` (15 minutes)
-  message: {
-    status: 429,
-    message: "Too many login attempts from this IP. Please try again after 15 minutes."
-  },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-app.use(loginLimiter); // Apply the rate limiter here
-
 // Admin login
-app.post('/admin/login',loginLimiter,async (req, res) => {
+app.post('/admin/login',async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -228,7 +213,7 @@ app.post('/user', async (req, res) => {
 
 
 // User login
-app.post('/login',loginLimiter, async (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -326,6 +311,7 @@ app.patch('/move', verifyToken, (req, res) => {
 
   res.send(`You moved ${direction}. ${nextRoomMessage}`);
 });
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
