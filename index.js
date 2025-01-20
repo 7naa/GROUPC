@@ -112,7 +112,7 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
 app.post('/admin/login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !validatePassword) {
+  if (!username || !password) {
     return res.status(400).send("Missing admin username or password");
   }
 
