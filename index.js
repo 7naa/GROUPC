@@ -109,23 +109,6 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
-  message: "Too many login attempts. Please try again in 15 minutes."
-});
-
-// Password validation
-function validatePassword(password) {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  if (!password || password.length < 8 || !regex.test(password)) {
-    return false;
-  }
-  const strength = zxcvbn(password);
-  return strength.score >= 3; // Score 3 or higher is acceptable
-}
-
-
 // Admin login
 app.post('/admin/login', async (req, res) => {
   const { username, password } = req.body;
