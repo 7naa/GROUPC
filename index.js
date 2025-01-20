@@ -1,5 +1,5 @@
+
 const express = require('express');
-const rateLimit = require('express-rate-limit');
 const app = express();
 const port = process.env.PORT || 4000;
 const bcrypt = require('bcrypt');
@@ -16,18 +16,6 @@ const client = new MongoClient(uri, {
     strict: true,
     deprecationErrors: true,
   }
-});
-
-// Rate limiting middleware for login routes
-const loginRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login attempts per windowMs
-  message: {
-    status: 429,
-    error: "Too many login attempts from this IP, please try again after 15 minutes."
-  },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
 // Function to verify JWT token
@@ -53,8 +41,75 @@ function verifyAdmin(req, res, next) {
   next();
 }
 
+// Initialize the first admin (one-time use)
+app.post('/initialize-admin', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send("Missing admin username or password");
+  }
+
+  if (password.length < 8) {
+    return res.status(400).send("Password must be at least 8 characters long.");
+  }
+
+  try {
+    // Check if any admin already exists
+    const existingAdmin = await client.db("user").collection("admin").findOne({});
+    if (existingAdmin) {
+      return res.status(403).send("An admin already exists. Initialization is not allowed.");
+    }
+
+    // Hash the password
+    const hash = bcrypt.hashSync(password, 15);
+
+    // Insert the new admin
+    const result = await client.db("user").collection("admin").insertOne({
+      username,
+      password: hash
+    });
+
+    res.send({ message: "Admin initialized successfully", adminId: result.insertedId });
+  } catch (error) {
+    console.error("Error during admin initialization:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Admin registration
+app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send("Missing admin username or password");
+  }
+
+  if (password.length < 8) {
+    return res.status(400).send("Password must be at least 8 characters long.");
+  }
+
+  try {
+    const existingAdmin = await client.db("user").collection("admin").findOne({ username });
+    if (existingAdmin) {
+      return res.status(400).send("Admin username already exists.");
+    }
+
+    const hash = bcrypt.hashSync(password, 15);
+
+    const result = await client.db("user").collection("admin").insertOne({
+      username,
+      password: hash
+    });
+
+    res.send({ message: "Admin registered successfully", adminId: result.insertedId });
+  } catch (error) {
+    console.error("Error during admin registration:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 // Admin login
-app.post('/admin/login', loginRateLimiter, async (req, res) => {
+app.post('/admin/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -85,8 +140,70 @@ app.post('/admin/login', loginRateLimiter, async (req, res) => {
   }
 });
 
+// Get all user profiles (Admin only)
+app.get('/admin/users', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const users = await client.db("user").collection("userdetail").find({}).toArray();
+    res.send(users);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Delete user profile (Admin only)
+app.delete('/admin/user/:id', verifyToken, verifyAdmin, async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const result = await client.db("user").collection("userdetail").deleteOne({ _id: new ObjectId(userId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).send("User not found");
+    }
+
+    res.send("User deleted successfully");
+  } catch (error) {
+    console.error("Error deleting user profile:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// User registration
+app.post('/user', async (req, res) => {
+  const { username, password, name, email } = req.body;
+
+  if (!username || !password || !name || !email) {
+    return res.status(400).send("All fields are required");
+  }
+
+  if (password.length < 8) {
+    return res.status(400).send("Password must be at least 8 characters long.");
+  }
+
+  try {
+    const existingUser = await client.db("user").collection("userdetail").findOne({ username });
+    if (existingUser) {
+      return res.status(400).send("Username already exists.");
+    }
+
+    const hash = bcrypt.hashSync(password, 15);
+
+    const result = await client.db("user").collection("userdetail").insertOne({
+      username,
+      password: hash,
+      name,
+      email
+    });
+    res.send(result);
+  } catch (error) {
+    console.error("Error during user registration:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 // User login
-app.post('/login', loginRateLimiter, async (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -117,6 +234,72 @@ app.post('/login', loginRateLimiter, async (req, res) => {
   }
 });
 
+// Get user profile
+app.get('/user/:id', verifyToken, async (req, res) => {
+  if (req.identity._id != req.params.id) {
+    return res.status(401).send('Unauthorized access');
+  }
+
+  let result = await client.db("user").collection("userdetail").findOne({
+    _id: new ObjectId(req.params.id)
+  });
+  res.send(result);
+});
+
+
+app.post('/buy', async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  var decoded = jwt.verify(token, 'hurufasepuluhkali');
+  console.log(decoded);
+});
+const fs = require('fs');
+const path = require('path');
+
+// Choose map - Authenticated route
+app.post('/choose-map', verifyToken, (req, res) => {
+  const selectedMapName = req.body.selectedMap;
+
+  function mapJsonPathExists(mapPath) {
+    try {
+      fs.accessSync(mapPath, fs.constants.F_OK);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  const mapJsonPath = `./${selectedMapName}.json`;
+  if (mapJsonPathExists(mapJsonPath)) {
+    const mapData = JSON.parse(fs.readFileSync(mapJsonPath, 'utf-8'));
+    req.identity.selectedMap = selectedMapName; // Store the selected map in the JWT
+    req.identity.playerPosition = mapData.playerLoc; // Set initial player position
+    const room1Message = mapData.map.room1.message;
+
+    res.send(`You choose ${selectedMapName}. Let's start playing!\n\nRoom 1 Message:\n${room1Message}`);
+  } else {
+    res.status(404).send(`Map "${selectedMapName}" not found.`);
+  }
+});
+// Move - Authenticated route
+app.patch('/move', verifyToken, (req, res) => {
+  const direction = req.body.direction;
+
+  if (!req.identity.selectedMap) {
+    return res.status(400).send("No map selected.");
+  }
+  const mapData = require(`./${req.identity.selectedMap}.json`);
+  const currentRoom = mapData.map[req.identity.playerPosition];
+
+  const nextRoom = currentRoom[direction];
+  if (!nextRoom) {
+    return res.status(400).send(`Invalid direction: ${direction}`);
+  }
+
+  const nextRoomMessage = mapData.map[nextRoom].message;
+  req.identity.playerPosition = nextRoom;
+
+  res.send(`You moved ${direction}. ${nextRoomMessage}`);
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
