@@ -191,7 +191,6 @@ app.post('/user', async (req, res) => {
   }
 
   return { valid: true };
-}
 
   try {
     const existingUser = await client.db("user").collection("userdetail").findOne({ username });
