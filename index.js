@@ -5,6 +5,7 @@ const port = process.env.PORT || 4000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const rateLimit = require('express-rate-limit');
 
 // Middleware to parse JSON in request body
 app.use(express.json());
@@ -40,6 +41,18 @@ function verifyAdmin(req, res, next) {
   }
   next();
 }
+
+// Rate limiting middleware
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login requests per `window` (15 minutes)
+  message: {
+    status: 429,
+    message: "Too many login attempts from this IP. Please try again after 15 minutes."
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 // Initialize the first admin (one-time use)
 app.post('/initialize-admin', async (req, res) => {
@@ -109,7 +122,7 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // Admin login
-app.post('/admin/login',async (req, res) => {
+app.post('/admin/login',loginLimiter,async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -213,7 +226,7 @@ app.post('/user', async (req, res) => {
 
 
 // User login
-app.post('/login', async (req, res) => {
+app.post('/login',loginLimiter, async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -263,6 +276,7 @@ app.post('/buy', async (req, res) => {
   var decoded = jwt.verify(token, 'hurufasepuluhkali');
   console.log(decoded);
 });
+
 const fs = require('fs');
 const path = require('path');
 
