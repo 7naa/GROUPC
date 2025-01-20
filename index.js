@@ -119,7 +119,7 @@ const loginLimiter = rateLimit({
 });
 
 // Admin login
-app.post('/admin/login', loginLimiter,async (req, res) => {
+app.post('/admin/login',async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
