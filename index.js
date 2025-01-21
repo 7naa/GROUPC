@@ -1,4 +1,5 @@
 
+const rateLimit = require('express-rate-limit'); // Import the rate-limit package
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 4000;
@@ -40,6 +41,13 @@ function verifyAdmin(req, res, next) {
   }
   next();
 }
+
+// Rate limiting middleware for login endpoints
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login requests per `window` (here, per 15 minutes)
+  message: "Too many login attempts from this IP, please try again after 15 minutes"
+});
 
 // Initialize the first admin (one-time use)
 app.post('/initialize-admin', async (req, res) => {
@@ -109,7 +117,7 @@ app.post('/admin/register', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // Admin login
-app.post('/admin/login',async (req, res) => {
+app.post('/admin/login',loginLimiter,async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -213,7 +221,7 @@ app.post('/user', async (req, res) => {
 
 
 // User login
-app.post('/login', async (req, res) => {
+app.post('/login', loginLimiter,async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -260,7 +268,7 @@ app.get('/user/:id', verifyToken, async (req, res) => {
 
 app.post('/buy', async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
-  var decoded = jwt.verify(token, 'hurufasepuluhkali');
+  var decoded = jwt.verify(token, jwtSecret);
   console.log(decoded);
 });
 const fs = require('fs');
