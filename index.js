@@ -1,22 +1,20 @@
 
 const rateLimit = require('express-rate-limit'); // Import the rate-limit package
 const express = require('express');
+const axios = require('axios');
 const app = express();
 const port = process.env.PORT || 4000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
+const credentials = 'X509-cert-7873632355938583515.pem'
 // Middleware to parse JSON in request body
 app.use(express.json());
 
-const uri = "mongodb+srv://7naa:hurufasepuluhkali@cluster0.4oeznz2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+const client = new MongoClient('mongodb+srv://cluster0.4oeznz2.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509&retryWrites=true&w=majority&appName=Cluster0', {
+  tlsCertificateKeyFile: credentials,
+  serverApi: ServerApiVersion.v1
 });
 
 // Function to verify JWT token
@@ -328,9 +326,15 @@ app.listen(port, () => {
 async function run() {
   try {
     await client.connect();
+    const database = client.db("testDB");
+    const collection = database.collection("testCol");
+    const docCount = await collection.countDocuments({});
+    console.log(docCount);
     console.log('Connected to MongoDB successfully!');
-  } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
+    // perform actions using client
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
   }
 }
 run().catch(console.dir);
